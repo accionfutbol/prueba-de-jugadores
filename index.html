@@ -6,19 +6,38 @@
 <title>Inscripción — Prueba de Jugadores | Acción Fútbol Pro</title>
 <style>
   :root{
-    --rosa:#e6007e; --rosa-osc:#b30062; --negro:#0f0f10; --gris:#f2f0f3;
+    --rosa:#e6007e; --rosa-osc:#b30062; --negro:#0f0f10; --negro-2:#161618;
     --texto:#161016; --error:#d32f2f; --suave:#6b5f68;
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--gris);color:var(--texto)}
-  .wrap{max-width:600px;margin:0 auto;padding:20px 14px 60px}
-  .card{background:#fff;border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,.12);overflow:hidden}
-  .head{background:var(--negro);color:#fff;padding:26px 24px 28px;text-align:center;border-bottom:4px solid var(--rosa)}
-  .logo{width:104px;height:104px;object-fit:contain;margin:0 auto 12px;display:block}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--negro);color:#fff;min-height:100vh}
+
+  /* Logos decorativos en los costados (solo pantallas anchas) */
+  .lado{position:fixed;top:50%;transform:translateY(-50%);width:200px;opacity:.10;pointer-events:none;z-index:0}
+  .lado.izq{left:3%}
+  .lado.der{right:3%}
+  @media (max-width:1000px){ .lado{display:none} }
+
+  .wrap{position:relative;z-index:1;max-width:600px;margin:0 auto;padding:28px 14px 60px}
+
+  /* ---------- PORTADA ---------- */
+  .hero{text-align:center;padding:34px 20px 10px}
+  .hero .logo{width:190px;max-width:70%;height:auto;margin:0 auto 22px;display:block}
+  .hero h1{font-size:1.9rem;line-height:1.25;margin:0 auto 8px;max-width:14ch}
+  .hero h1 span{color:var(--rosa)}
+  .hero p{color:#c7c1c6;font-size:1rem;margin:0 0 28px}
+  .cta{display:inline-block;border:0;border-radius:14px;background:var(--rosa);color:#fff;
+       font-size:1.15rem;font-weight:800;letter-spacing:.5px;padding:17px 40px;cursor:pointer;
+       text-transform:uppercase;transition:transform .12s,background .15s}
+  .cta:hover{background:var(--rosa-osc);transform:translateY(-2px)}
+
+  /* ---------- TARJETA / FORMULARIO ---------- */
+  #zona-form{display:none}
+  .card{background:#fff;color:var(--texto);border-radius:18px;box-shadow:0 8px 40px rgba(0,0,0,.5);overflow:hidden}
+  .head{background:var(--negro-2);color:#fff;padding:22px 24px 24px;text-align:center;border-bottom:4px solid var(--rosa)}
+  .head .logo{width:80px;height:80px;object-fit:contain;margin:0 auto 8px;display:block}
   .badge{display:inline-block;background:var(--rosa);color:#fff;font-weight:800;letter-spacing:.5px;
-         padding:5px 14px;border-radius:999px;font-size:.72rem;margin-bottom:10px;text-transform:uppercase}
-  .head h1{margin:0 0 6px;font-size:1.45rem;line-height:1.2}
-  .head p{margin:0;opacity:.82;font-size:.92rem}
+         padding:5px 14px;border-radius:999px;font-size:.72rem;text-transform:uppercase}
   form{padding:24px}
   .sec{font-size:.78rem;font-weight:800;color:var(--rosa-osc);text-transform:uppercase;letter-spacing:.6px;margin:6px 0 2px}
   label{display:block;font-weight:600;font-size:.9rem;margin:16px 0 6px}
@@ -28,112 +47,109 @@
   .hint{font-size:.78rem;color:var(--suave);margin-top:4px}
   .err{color:var(--error);font-size:.8rem;margin-top:4px;display:none}
   input.invalid,select.invalid{border-color:var(--error)}
-  button{width:100%;margin-top:26px;padding:16px;border:0;border-radius:12px;background:var(--rosa);color:#fff;font-size:1.08rem;font-weight:800;cursor:pointer;transition:background .15s}
-  button:hover{background:var(--rosa-osc)}
-  button:disabled{opacity:.6;cursor:not-allowed}
+  button.enviar{width:100%;margin-top:26px;padding:16px;border:0;border-radius:12px;background:var(--rosa);color:#fff;font-size:1.08rem;font-weight:800;cursor:pointer;transition:background .15s}
+  button.enviar:hover{background:var(--rosa-osc)}
+  button.enviar:disabled{opacity:.6;cursor:not-allowed}
   .ok{display:none;padding:44px 24px;text-align:center}
   .ok .check{width:70px;height:70px;border-radius:50%;background:#fde5f1;color:var(--rosa-osc);font-size:2.2rem;line-height:70px;margin:0 auto 18px}
   .ok h2{margin:0 0 10px}
   .ok p{color:var(--suave);line-height:1.5}
   .pasos{background:#faf6f9;border:1px solid #f0e2ec;border-radius:12px;padding:14px 16px;margin-top:16px;font-size:.82rem;color:var(--suave);text-align:left}
   .pasos b{color:var(--texto)}
-  .foot{text-align:center;font-size:.75rem;color:#a99fa6;margin-top:18px}
+  .foot{text-align:center;font-size:.75rem;color:#8a8188;margin-top:22px}
 </style>
 </head>
 <body>
+  <img class="lado izq" src="logo.png" alt="" aria-hidden="true">
+  <img class="lado der" src="logo.png" alt="" aria-hidden="true">
+
 <div class="wrap">
-  <div class="card">
-    <div class="head">
-      <!-- Logo: usa tu PNG (logo.png junto a este archivo). Si no está, muestra el escudo vectorial. -->
-      <img class="logo" src="logo.png" alt="Acción Fútbol" onerror="this.style.display='none';document.getElementById('logo-svg').style.display='block';">
-      <svg id="logo-svg" class="logo" style="display:none" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" aria-label="Acción Fútbol">
-        <path d="M100 8 L188 34 V120 C188 170 150 200 100 214 C50 200 12 170 12 120 V34 Z"
-              fill="none" stroke="#fff" stroke-width="7"/>
-        <path d="M100 22 L176 44 V118 C176 160 144 187 100 200 C56 187 24 160 24 118 V44 Z"
-              fill="none" stroke="#fff" stroke-width="3"/>
-        <text x="100" y="118" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="74" fill="#fff" letter-spacing="2">AF</text>
-        <g fill="#fff">
-          <rect x="44" y="132" width="9" height="34"/><rect x="60" y="132" width="9" height="34"/>
-          <rect x="76" y="132" width="9" height="34"/><rect x="115" y="132" width="9" height="34"/>
-          <rect x="131" y="132" width="9" height="34"/><rect x="147" y="132" width="9" height="34"/>
-        </g>
-        <text x="100" y="160" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#fff" letter-spacing="1">ACCIÓN FÚTBOL</text>
-        <circle cx="100" cy="184" r="13" fill="none" stroke="#fff" stroke-width="3"/>
-        <circle cx="100" cy="184" r="3" fill="#fff"/>
-      </svg>
 
-      <span class="badge">Acción Fútbol Pro</span>
-      <h1>Inscripción · Prueba de Jugadores</h1>
-      <p>Completa tus datos para participar en la prueba de este mes.</p>
-    </div>
+  <!-- ============ PORTADA ============ -->
+  <section class="hero" id="hero">
+    <img class="logo" src="logo.png" alt="Acción Fútbol">
+    <h1>Bienvenido a la Academia <span>Acción Fútbol</span></h1>
+    <p>Inscríbete en la prueba de jugadores de este mes.</p>
+    <button class="cta" id="btn-empezar">Inscríbete aquí</button>
+  </section>
 
-    <form id="form" novalidate>
-      <div class="sec">Datos del jugador</div>
+  <!-- ============ FORMULARIO ============ -->
+  <section id="zona-form">
+    <div class="card">
+      <div class="head">
+        <img class="logo" src="logo.png" alt="Acción Fútbol">
+        <span class="badge">Acción Fútbol Pro</span>
+      </div>
 
-      <label>Nombres y apellidos del jugador <span class="req">*</span></label>
-      <input type="text" name="nombre" id="nombre" autocomplete="name" required>
-      <div class="err" id="e-nombre">Ingresa nombres y apellidos.</div>
+      <form id="form" novalidate>
+        <div class="sec">Datos del jugador</div>
 
-      <label>Edad <span class="req">*</span></label>
-      <input type="number" name="edad" id="edad" min="6" max="60" inputmode="numeric" required>
-      <div class="err" id="e-edad">Ingresa una edad válida.</div>
+        <label>Nombres y apellidos del jugador <span class="req">*</span></label>
+        <input type="text" name="nombre" id="nombre" autocomplete="name" required>
+        <div class="err" id="e-nombre">Ingresa nombres y apellidos.</div>
 
-      <label>Año de nacimiento <span class="req">*</span></label>
-      <input type="number" name="anio" id="anio" min="1965" max="2020" placeholder="Ej: 2009" inputmode="numeric" required>
-      <div class="err" id="e-anio">Ingresa el año de nacimiento (4 dígitos).</div>
+        <label>Edad <span class="req">*</span></label>
+        <input type="number" name="edad" id="edad" min="6" max="60" inputmode="numeric" required>
+        <div class="err" id="e-edad">Ingresa una edad válida.</div>
 
-      <div class="sec">Contacto</div>
+        <label>Año de nacimiento <span class="req">*</span></label>
+        <input type="number" name="anio" id="anio" min="1965" max="2020" placeholder="Ej: 2009" inputmode="numeric" required>
+        <div class="err" id="e-anio">Ingresa el año de nacimiento (4 dígitos).</div>
 
-      <label>Correo electrónico <span class="req">*</span></label>
-      <input type="email" name="email" id="email" autocomplete="email" placeholder="correo@ejemplo.com" required>
-      <div class="err" id="e-email">Ingresa un correo válido.</div>
+        <div class="sec">Contacto</div>
 
-      <label>Repite el correo <span class="req">*</span></label>
-      <input type="email" name="email2" id="email2" placeholder="Escribe de nuevo tu correo" required>
-      <div class="hint">Escríbelo bien: ahí te llegará la confirmación.</div>
-      <div class="err" id="e-email2">Los correos no coinciden.</div>
+        <label>Correo electrónico <span class="req">*</span></label>
+        <input type="email" name="email" id="email" autocomplete="email" placeholder="correo@ejemplo.com" required>
+        <div class="err" id="e-email">Ingresa un correo válido.</div>
 
-      <label>Teléfono del jugador o apoderado <span class="req">*</span></label>
-      <input type="tel" name="telefono" id="telefono" placeholder="+56987654321" required>
-      <div class="hint">Con +569. Ejemplo: +56987654321</div>
-      <div class="err" id="e-telefono">Ingresa un teléfono válido.</div>
+        <label>Repite el correo <span class="req">*</span></label>
+        <input type="email" name="email2" id="email2" placeholder="Escribe de nuevo tu correo" required>
+        <div class="hint">Escríbelo bien: ahí te llegará la confirmación.</div>
+        <div class="err" id="e-email2">Los correos no coinciden.</div>
 
-      <div class="sec">Participación</div>
+        <label>Teléfono del jugador o apoderado <span class="req">*</span></label>
+        <input type="tel" name="telefono" id="telefono" placeholder="+56987654321" required>
+        <div class="hint">Con +569. Ejemplo: +56987654321</div>
+        <div class="err" id="e-telefono">Ingresa un teléfono válido.</div>
 
-      <label>¿Puedes participar en la prueba de jugadores? <span class="req">*</span></label>
-      <select name="participa" id="participa" required>
-        <option value="">Selecciona…</option>
-        <option>SÍ, puedo participar</option>
-        <option>Aún no estoy seguro</option>
-        <option>No puedo esta fecha</option>
-      </select>
-      <div class="err" id="e-participa">Selecciona una opción.</div>
+        <div class="sec">Participación</div>
 
-      <label>¿Qué sede te acomoda más? <span class="req">*</span></label>
-      <select name="sede" id="sede" required>
-        <option value="">Selecciona…</option>
-        <option>Peñalolén</option>
-        <option>La Florida</option>
-        <option>Las Condes</option>
-      </select>
-      <div class="err" id="e-sede">Selecciona una sede.</div>
+        <label>¿Puedes participar en la prueba de jugadores? <span class="req">*</span></label>
+        <select name="participa" id="participa" required>
+          <option value="">Selecciona…</option>
+          <option>SÍ, puedo participar</option>
+          <option>Aún no estoy seguro</option>
+          <option>No puedo esta fecha</option>
+        </select>
+        <div class="err" id="e-participa">Selecciona una opción.</div>
 
-      <button type="submit" id="btn">Enviar inscripción</button>
-    </form>
+        <label>¿Qué sede te acomoda más? <span class="req">*</span></label>
+        <select name="sede" id="sede" required>
+          <option value="">Selecciona…</option>
+          <option>Peñalolén</option>
+          <option>La Florida</option>
+          <option>Las Condes</option>
+        </select>
+        <div class="err" id="e-sede">Selecciona una sede.</div>
 
-    <div class="ok" id="ok">
-      <div class="check">✓</div>
-      <h2>¡Inscripción recibida!</h2>
-      <p>Revisa tu correo: te llegará el <b>formulario de Confirmación</b>, que es obligatorio para participar.</p>
-      <div class="pasos">
-        <b>Proceso completo:</b><br>
-        1. Inscripción ✅<br>
-        2. Confirmación (obligatoria)<br>
-        3. Prueba de jugadores<br>
-        4. Reunión de apoderados
+        <button type="submit" class="enviar" id="btn">Enviar inscripción</button>
+      </form>
+
+      <div class="ok" id="ok">
+        <div class="check">✓</div>
+        <h2>¡Inscripción recibida!</h2>
+        <p>Revisa tu correo: te llegará el <b>formulario de Confirmación</b>, que es obligatorio para participar.</p>
+        <div class="pasos">
+          <b>Proceso completo:</b><br>
+          1. Inscripción ✅<br>
+          2. Confirmación (obligatoria)<br>
+          3. Prueba de jugadores<br>
+          4. Reunión de apoderados
+        </div>
       </div>
     </div>
-  </div>
+  </section>
+
   <p class="foot">Acción Fútbol Pro · Prueba de Jugadores</p>
 </div>
 
@@ -141,6 +157,13 @@
 // ====== PEGA AQUÍ la URL del Web App de Apps Script ======
 var ENDPOINT = 'PEGA_AQUI_LA_URL_DEL_APPS_SCRIPT';
 // =========================================================
+
+// Portada -> Formulario
+document.getElementById('btn-empezar').addEventListener('click', function(){
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('zona-form').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 
 function marcar(id, ok){
   document.getElementById(id).classList.toggle('invalid', !ok);
