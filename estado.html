@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Estás confirmado? | Acción Fútbol Pro</title>
+<style>
+  :root{ --rosa:#e6007e; --rosa-osc:#b30062; --negro:#0f0f10; --negro-2:#161618; --texto:#161016; --error:#d32f2f; --suave:#6b5f68; }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--negro);color:#fff;min-height:100vh}
+  .lado{position:fixed;top:50%;transform:translateY(-50%);width:200px;opacity:.10;pointer-events:none;z-index:0}
+  .lado.izq{left:3%}.lado.der{right:3%}
+  @media (max-width:1000px){ .lado{display:none} }
+  .wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:28px 14px 60px}
+  .card{background:#fff;color:var(--texto);border-radius:18px;box-shadow:0 8px 40px rgba(0,0,0,.5);overflow:hidden}
+  .head{background:var(--negro-2);color:#fff;padding:24px;text-align:center;border-bottom:4px solid var(--rosa)}
+  .head .logo{width:84px;height:84px;object-fit:contain;margin:0 auto 10px;display:block}
+  .head h1{margin:0;font-size:1.3rem}
+  .head p{margin:6px 0 0;opacity:.82;font-size:.9rem}
+  form{padding:24px}
+  label{display:block;font-weight:600;font-size:.9rem;margin:16px 0 6px}
+  .req{color:var(--error)}
+  input{width:100%;padding:12px 14px;border:1.5px solid #d8d2d7;border-radius:10px;font-size:1rem}
+  input:focus{outline:none;border-color:var(--rosa);box-shadow:0 0 0 3px rgba(230,0,126,.14)}
+  .hint{font-size:.78rem;color:var(--suave);margin-top:4px}
+  .err{color:var(--error);font-size:.8rem;margin-top:4px;display:none}
+  input.invalid{border-color:var(--error)}
+  button{width:100%;margin-top:24px;padding:16px;border:0;border-radius:12px;background:var(--rosa);color:#fff;font-size:1.05rem;font-weight:800;cursor:pointer}
+  button:hover{background:var(--rosa-osc)}
+  button:disabled{opacity:.6;cursor:not-allowed}
+  #resultado{padding:0 24px 28px;display:none}
+  .res-ok{background:#e9f9ef;border:1px solid #b7ebc9;border-radius:14px;padding:22px;text-align:center}
+  .res-ok .ico{font-size:2.6rem;line-height:1}
+  .res-ok h2{margin:8px 0 6px;color:#1c7a3f}
+  .res-no{background:#fdecec;border:1px solid #f6c2c2;border-radius:14px;padding:22px;text-align:center}
+  .res-no .ico{font-size:2.6rem;line-height:1}
+  .res-no h2{margin:8px 0 6px;color:#b3261e}
+  .detalle{background:#faf6f9;border:1px solid #f0e2ec;border-radius:12px;padding:14px 16px;margin-top:14px;text-align:left;font-size:.9rem;line-height:1.5}
+  .detalle b{color:var(--texto)}
+  .btn-link{display:inline-block;margin-top:16px;background:var(--rosa);color:#fff;text-decoration:none;padding:13px 26px;border-radius:10px;font-weight:800}
+  .foot{text-align:center;font-size:.75rem;color:#8a8188;margin-top:22px}
+  .cargando{text-align:center;color:var(--suave);padding:10px 0}
+</style>
+</head>
+<body>
+  <img class="lado izq" src="logo.png" alt="" aria-hidden="true">
+  <img class="lado der" src="logo.png" alt="" aria-hidden="true">
+
+<div class="wrap">
+  <div class="card">
+    <div class="head">
+      <img class="logo" src="logo.png" alt="Acción Fútbol">
+      <h1>¿Estás confirmado?</h1>
+      <p>Ingresa tus datos y revisa tu estado para la prueba de jugadores.</p>
+    </div>
+
+    <form id="form" novalidate>
+      <label>RUT <span class="req">*</span></label>
+      <input type="text" id="rut" placeholder="12.345.678-9" required>
+      <div class="err" id="e-rut">Ingresa tu RUT.</div>
+
+      <label>Correo electrónico <span class="req">*</span></label>
+      <input type="email" id="email" placeholder="correo@ejemplo.com" required>
+      <div class="err" id="e-email">Ingresa un correo válido.</div>
+
+      <label>Teléfono <span class="req">*</span></label>
+      <input type="tel" id="tel" placeholder="+56987654321" required>
+      <div class="hint">Con +569. Ejemplo: +56987654321</div>
+      <div class="err" id="e-tel">Ingresa tu teléfono.</div>
+
+      <button type="submit" id="btn">Consultar mi estado</button>
+      <div class="cargando" id="cargando" style="display:none">Consultando…</div>
+    </form>
+
+    <div id="resultado"></div>
+  </div>
+  <p class="foot">Acción Fútbol Pro · Prueba de Jugadores</p>
+</div>
+
+<script>
+// ====== URL del Web App de Apps Script ======
+var ENDPOINT = 'https://script.google.com/macros/s/AKfycbxp3LefN7yw18dQPlbja4zUQa7jsZ_bRgOF-1Cxk6A4RNYgDYblrRI6tSzahG8-AdAyBA/exec';
+// ============================================
+
+function marcar(id, ok){
+  document.getElementById(id).classList.toggle('invalid', !ok);
+  document.getElementById('e-'+id).style.display = ok ? 'none' : 'block';
+  return ok;
+}
+
+function esc(s){ return ('' + (s||'')).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function mostrar(res){
+  document.getElementById('cargando').style.display = 'none';
+  document.getElementById('btn').disabled = false;
+  var cont = document.getElementById('resultado');
+  cont.style.display = 'block';
+
+  if (res && res.ok === false) {
+    cont.innerHTML = '<div class="res-no"><div class="ico">⚠️</div>' +
+      '<h2>No pudimos consultar</h2><p>Intenta nuevamente en unos segundos.</p></div>';
+    return;
+  }
+
+  if (res && res.confirmado) {
+    var nombre = res.nombre ? (', ' + esc(res.nombre)) : '';
+    var det = '';
+    if (res.donde)   det += '<p style="margin:0 0 8px"><b>Tu prueba:</b><br>' + esc(res.donde) + '</p>';
+    if (res.horario) det += '<p style="margin:0 0 8px"><b>Horario:</b> ' + esc(res.horario) + '</p>';
+    if (res.reunion) det += '<p style="margin:0"><b>Reunión de apoderados:</b> ' + esc(res.reunion) + '</p>';
+    cont.innerHTML = '<div class="res-ok"><div class="ico">✅</div>' +
+      '<h2>¡Felicidades' + nombre + '!</h2>' +
+      '<p>Ya estás <b>confirmado</b> para la prueba de jugadores.</p>' +
+      (det ? '<div class="detalle">' + det + '</div>' : '') +
+      '</div>';
+  } else {
+    var link = res && res.link ? res.link : '';
+    var boton = link
+      ? '<a class="btn-link" href="' + link + '" target="_blank" rel="noopener">Realizar formulario de Confirmación</a>'
+      : '<p style="margin-top:12px;color:#b3261e">Pide el link del formulario de confirmación a la academia.</p>';
+    cont.innerHTML = '<div class="res-no"><div class="ico">📝</div>' +
+      '<h2>Aún no estás confirmado</h2>' +
+      '<p>No encontramos tus datos en el formulario de <b>Confirmación</b>.<br>' +
+      'Por favor complétalo para poder participar:</p>' + boton + '</div>';
+  }
+}
+
+document.getElementById('form').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  var rut = document.getElementById('rut').value.trim();
+  var email = document.getElementById('email').value.trim();
+  var tel = document.getElementById('tel').value.trim();
+  var v = true;
+  v = marcar('rut', rut.length >= 6) && v;
+  v = marcar('email', /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) && v;
+  v = marcar('tel', tel.replace(/\D/g,'').length >= 8) && v;
+  if(!v) return;
+
+  document.getElementById('resultado').style.display = 'none';
+  document.getElementById('btn').disabled = true;
+  document.getElementById('cargando').style.display = 'block';
+
+  var cb = 'cbEstado' + Date.now();
+  var timeout = setTimeout(function(){
+    if (window[cb]) { mostrar({ ok:false }); limpiar(); }
+  }, 12000);
+
+  function limpiar(){
+    try { delete window[cb]; } catch(e){ window[cb] = undefined; }
+    if (s && s.parentNode) s.parentNode.removeChild(s);
+    clearTimeout(timeout);
+  }
+
+  window[cb] = function(res){ mostrar(res); limpiar(); };
+
+  var s = document.createElement('script');
+  s.src = ENDPOINT + '?action=estado&callback=' + cb +
+          '&rut=' + encodeURIComponent(rut) +
+          '&email=' + encodeURIComponent(email) +
+          '&tel=' + encodeURIComponent(tel);
+  s.onerror = function(){ mostrar({ ok:false }); limpiar(); };
+  document.body.appendChild(s);
+});
+</script>
+</body>
+</html>
