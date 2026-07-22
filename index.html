@@ -141,7 +141,7 @@ document.getElementById('form').addEventListener('submit', function(ev){
   var cb = 'cbEstado' + Date.now();
   var timeout = setTimeout(function(){
     if (window[cb]) { mostrar({ ok:false }); limpiar(); }
-  }, 12000);
+  }, 20000);
 
   function limpiar(){
     try { delete window[cb]; } catch(e){ window[cb] = undefined; }
