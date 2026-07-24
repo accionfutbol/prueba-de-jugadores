@@ -55,7 +55,11 @@
     </div>
 
     <form id="form" novalidate>
-      <label>RUT <span class="req">*</span></label>
+      <label>Nombre del jugador <span class="req">*</span></label>
+      <input type="text" id="nombre" autocomplete="name" required>
+      <div class="err" id="e-nombre">Ingresa el nombre del jugador.</div>
+
+      <label>RUT del jugador <span class="req">*</span></label>
       <input type="text" id="rut" placeholder="12.345.678-9" required>
       <div class="err" id="e-rut">Ingresa tu RUT.</div>
 
@@ -104,12 +108,17 @@ function mostrar(res){
 
   if (res && res.confirmado) {
     var nombre = res.nombre ? (', ' + esc(res.nombre)) : '';
-    var det = '';
-    if (res.donde)   det += '<p style="margin:0"><b>Recuerda tu prueba:</b><br>' + esc(res.donde) + '</p>';
+    var lineas = '';
+    if (res.fecha)     lineas += '<p style="margin:0 0 6px">📅 <b>Fecha:</b> ' + esc(res.fecha) + '</p>';
+    if (res.horario)   lineas += '<p style="margin:0 0 6px">🕘 <b>Horario:</b> ' + esc(res.horario) + '</p>';
+    if (res.direccion) lineas += '<p style="margin:0">📍 <b>Dirección:</b> ' + esc(res.direccion) + '</p>';
+    var det = lineas
+      ? '<div class="detalle"><p style="margin:0 0 10px"><b>Recuerda dónde debes asistir a tu prueba:</b></p>' + lineas + '</div>'
+      : '';
     cont.innerHTML = '<div class="res-ok"><div class="ico">✅</div>' +
       '<h2>¡Felicidades' + nombre + '!</h2>' +
       '<p>Ya estás <b>confirmado</b> para la prueba de jugadores.</p>' +
-      (det ? '<div class="detalle">' + det + '</div>' : '') +
+      det +
       '</div>';
   } else {
     var link = res && res.link ? res.link : '';
@@ -125,10 +134,12 @@ function mostrar(res){
 
 document.getElementById('form').addEventListener('submit', function(ev){
   ev.preventDefault();
+  var nombre = document.getElementById('nombre').value.trim();
   var rut = document.getElementById('rut').value.trim();
   var email = document.getElementById('email').value.trim();
   var tel = document.getElementById('tel').value.trim();
   var v = true;
+  v = marcar('nombre', nombre.length > 2) && v;
   v = marcar('rut', rut.length >= 6) && v;
   v = marcar('email', /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) && v;
   v = marcar('tel', tel.replace(/\D/g,'').length >= 8) && v;
@@ -153,6 +164,7 @@ document.getElementById('form').addEventListener('submit', function(ev){
 
   var s = document.createElement('script');
   s.src = ENDPOINT + '?action=estado&callback=' + cb +
+          '&nombre=' + encodeURIComponent(nombre) +
           '&rut=' + encodeURIComponent(rut) +
           '&email=' + encodeURIComponent(email) +
           '&tel=' + encodeURIComponent(tel);
