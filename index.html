@@ -38,6 +38,10 @@
   .detalle{background:#faf6f9;border:1px solid #f0e2ec;border-radius:12px;padding:14px 16px;margin-top:14px;text-align:left;font-size:.9rem;line-height:1.5}
   .detalle b{color:var(--texto)}
   .btn-link{display:inline-block;margin-top:16px;background:var(--rosa);color:#fff;text-decoration:none;padding:13px 26px;border-radius:10px;font-weight:800}
+  .consejos{background:#fff;border:1px solid #d7e9dc;border-radius:12px;padding:16px 18px;margin-top:14px;text-align:left;font-size:.9rem;line-height:1.5;color:#243b2c}
+  .consejos li{margin-bottom:6px}
+  .btn-wsp{display:inline-block;background:#25D366;color:#fff;text-decoration:none;padding:13px 24px;border-radius:10px;font-weight:800}
+  .btn-wsp:hover{background:#1da851}
   .foot{text-align:center;font-size:.75rem;color:#8a8188;margin-top:22px}
   .cargando{text-align:center;color:var(--suave);padding:10px 0}
 </style>
@@ -116,10 +120,22 @@ function mostrar(res){
     var det = lineas
       ? '<div class="detalle"><p style="margin:0 0 10px"><b>Recuerda dónde debes asistir a tu prueba:</b></p>' + lineas + '</div>'
       : '';
+    var consejos = '<div class="consejos">' +
+      '<p style="margin:0 0 10px;font-weight:800;color:#1c7a3f">¡MUCHO ÉXITO EN LA PRUEBA DE JUGADORES! 🎉</p>' +
+      '<ul style="margin:0 0 14px;padding-left:18px">' +
+        '<li>Prepárate bien y planifica tu viaje para que no llegues tarde.</li>' +
+        '<li>Hoy duerme entre 8 y 9 horas.</li>' +
+        '<li>Asiste con ropa deportiva adecuada y cómoda (es cancha de pasto sintético).</li>' +
+        '<li>Ingresa al grupo de WhatsApp para estar informado y bien comunicado con nosotros.</li>' +
+        '<li>Observa bien el horario, la dirección y la ubicación.</li>' +
+      '</ul>' +
+      '<p style="margin:0 0 12px">Si aún no estás en nuestro grupo de WhatsApp, presiona el botón para estar bien comunicado con nosotros.</p>' +
+      '<a class="btn-wsp" href="https://bit.ly/gwpruebadejugadores" target="_blank" rel="noopener">💬 Unirme al grupo de WhatsApp</a>' +
+      '</div>';
     cont.innerHTML = '<div class="res-ok"><div class="ico">✅</div>' +
       '<h2>¡Felicidades' + nombre + '!</h2>' +
       '<p>Ya estás <b>confirmado</b> para la prueba de jugadores.</p>' +
-      det +
+      det + consejos +
       '</div>';
   } else {
     var link = res && res.link ? res.link : '';
