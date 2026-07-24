@@ -111,7 +111,8 @@ function mostrar(res){
     var lineas = '';
     if (res.fecha)     lineas += '<p style="margin:0 0 6px">📅 <b>Fecha:</b> ' + esc(res.fecha) + '</p>';
     if (res.horario)   lineas += '<p style="margin:0 0 6px">🕘 <b>Horario:</b> ' + esc(res.horario) + '</p>';
-    if (res.direccion) lineas += '<p style="margin:0">📍 <b>Dirección:</b> ' + esc(res.direccion) + '</p>';
+    if (res.direccion) lineas += '<p style="margin:0 0 6px">📍 <b>Dirección:</b> ' + esc(res.direccion) + '</p>';
+    if (res.ubicacion) lineas += '<p style="margin:8px 0 0">🗺️ <a href="' + esc(res.ubicacion) + '" target="_blank" rel="noopener" style="color:#b30062;font-weight:700">Ver ubicación en el mapa</a></p>';
     var det = lineas
       ? '<div class="detalle"><p style="margin:0 0 10px"><b>Recuerda dónde debes asistir a tu prueba:</b></p>' + lineas + '</div>'
       : '';
