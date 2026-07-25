@@ -42,6 +42,12 @@
   .consejos li{margin-bottom:6px}
   .btn-wsp{display:inline-block;background:#25D366;color:#fff;text-decoration:none;padding:13px 24px;border-radius:10px;font-weight:800}
   .btn-wsp:hover{background:#1da851}
+  .opciones{text-align:left;margin-top:14px}
+  .opcion{display:flex;gap:10px;align-items:flex-start;background:#faf6f9;border:1.5px solid #f0e2ec;border-radius:10px;padding:12px 14px;margin-bottom:10px;font-size:.9rem;cursor:pointer}
+  .opcion:hover{border-color:var(--rosa)}
+  .opcion input{margin-top:2px;width:auto}
+  .res-ok .enviar{background:var(--rosa)}
+  .res-ok .enviar:hover{background:var(--rosa-osc)}
   .foot{text-align:center;font-size:.75rem;color:#8a8188;margin-top:22px}
   .cargando{text-align:center;color:var(--suave);padding:10px 0}
 </style>
@@ -59,7 +65,7 @@
     </div>
 
     <form id="form" novalidate>
-      <label>Nombre y Apellido del jugador <span class="req">*</span></label>
+      <label>Nombre del jugador <span class="req">*</span></label>
       <input type="text" id="nombre" autocomplete="name" required>
       <div class="err" id="e-nombre">Ingresa el nombre del jugador.</div>
 
@@ -95,48 +101,71 @@ function marcar(id, ok){
   document.getElementById('e-'+id).style.display = ok ? 'none' : 'block';
   return ok;
 }
-
 function esc(s){ return ('' + (s||'')).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-function mostrar(res){
+var jugador = { nombre:'', rut:'', email:'', tel:'' };  // datos del jugador consultado
+var cont;  // contenedor de resultado
+
+// Llamada JSONP genérica al Apps Script
+function llamar(params, onResp){
+  var cb = 'cb' + Date.now() + Math.floor(Math.random()*1000);
+  var s;
+  var timeout = setTimeout(function(){ if (window[cb]) { onResp({ ok:false }); limpiar(); } }, 20000);
+  function limpiar(){ try { delete window[cb]; } catch(e){ window[cb] = undefined; } if (s && s.parentNode) s.parentNode.removeChild(s); clearTimeout(timeout); }
+  window[cb] = function(res){ onResp(res); limpiar(); };
+  var q = '?callback=' + cb;
+  for (var k in params){ q += '&' + k + '=' + encodeURIComponent(params[k]); }
+  s = document.createElement('script');
+  s.src = ENDPOINT + q;
+  s.onerror = function(){ onResp({ ok:false }); limpiar(); };
+  document.body.appendChild(s);
+}
+
+function bloqueError(){
+  return '<div class="res-no"><div class="ico">⚠️</div>' +
+    '<h2>No pudimos consultar</h2><p>Intenta nuevamente en unos segundos.</p></div>';
+}
+
+var consejosHTML =
+  '<div class="consejos">' +
+    '<p style="margin:0 0 10px;font-weight:800;color:#1c7a3f">¡MUCHO ÉXITO EN LA PRUEBA DE JUGADORES! 🎉</p>' +
+    '<ul style="margin:0 0 14px;padding-left:18px">' +
+      '<li>Prepárate bien y planifica tu viaje para que no llegues tarde.</li>' +
+      '<li>Hoy duerme entre 8 y 9 horas.</li>' +
+      '<li>Asiste con ropa deportiva adecuada y cómoda (es cancha de pasto sintético).</li>' +
+      '<li>Ingresa al grupo de WhatsApp para estar informado y bien comunicado con nosotros.</li>' +
+      '<li>Observa bien el horario, la dirección y la ubicación.</li>' +
+    '</ul>' +
+    '<p style="margin:0 0 12px">Si aún no estás en nuestro grupo de WhatsApp, presiona el botón para estar bien comunicado con nosotros.</p>' +
+    '<a class="btn-wsp" href="https://bit.ly/gwpruebadejugadores" target="_blank" rel="noopener">💬 Unirme al grupo de WhatsApp</a>' +
+  '</div>';
+
+// Muestra el resultado de la consulta de estado
+function mostrarEstado(res){
   document.getElementById('cargando').style.display = 'none';
   document.getElementById('btn').disabled = false;
-  var cont = document.getElementById('resultado');
   cont.style.display = 'block';
 
-  if (res && res.ok === false) {
-    cont.innerHTML = '<div class="res-no"><div class="ico">⚠️</div>' +
-      '<h2>No pudimos consultar</h2><p>Intenta nuevamente en unos segundos.</p></div>';
-    return;
-  }
+  if (res && res.ok === false) { cont.innerHTML = bloqueError(); return; }
 
   if (res && res.confirmado) {
     var nombre = res.nombre ? (', ' + esc(res.nombre)) : '';
-    var lineas = '';
-    if (res.fecha)     lineas += '<p style="margin:0 0 6px">📅 <b>Fecha:</b> ' + esc(res.fecha) + '</p>';
-    if (res.horario)   lineas += '<p style="margin:0 0 6px">🕘 <b>Horario:</b> ' + esc(res.horario) + '</p>';
-    if (res.direccion) lineas += '<p style="margin:0 0 6px">📍 <b>Dirección:</b> ' + esc(res.direccion) + '</p>';
-    if (res.ubicacion) lineas += '<p style="margin:8px 0 0">🗺️ <a href="' + esc(res.ubicacion) + '" target="_blank" rel="noopener" style="color:#b30062;font-weight:700">Ver ubicación en el mapa</a></p>';
-    var det = lineas
-      ? '<div class="detalle"><p style="margin:0 0 10px"><b>Recuerda dónde debes asistir a tu prueba:</b></p>' + lineas + '</div>'
-      : '';
-    var consejos = '<div class="consejos">' +
-      '<p style="margin:0 0 10px;font-weight:800;color:#1c7a3f">¡MUCHO ÉXITO EN LA PRUEBA DE JUGADORES! 🎉</p>' +
-      '<ul style="margin:0 0 14px;padding-left:18px">' +
-        '<li>Prepárate bien y planifica tu viaje para que no llegues tarde.</li>' +
-        '<li>Hoy duerme entre 8 y 9 horas.</li>' +
-        '<li>Asiste con ropa deportiva adecuada y cómoda (es cancha de pasto sintético).</li>' +
-        '<li>Ingresa al grupo de WhatsApp para estar informado y bien comunicado con nosotros.</li>' +
-        '<li>Observa bien el horario, la dirección y la ubicación.</li>' +
-      '</ul>' +
-      '<p style="margin:0 0 12px">Si aún no estás en nuestro grupo de WhatsApp, presiona el botón para estar bien comunicado con nosotros.</p>' +
-      '<a class="btn-wsp" href="https://bit.ly/gwpruebadejugadores" target="_blank" rel="noopener">💬 Unirme al grupo de WhatsApp</a>' +
-      '</div>';
+    var ops = res.opciones || [];
+    var radios = '';
+    for (var i = 0; i < ops.length; i++){
+      radios += '<label class="opcion"><input type="radio" name="opcion" value="' + esc(ops[i]) + '"> ' + esc(ops[i]) + '</label>';
+    }
+    var seleccion = ops.length
+      ? '<div class="opciones"><p style="margin:0 0 12px"><b>La prueba fue reprogramada.</b> Elige cuándo vas a participar:</p>' +
+        radios +
+        '<button type="button" id="btn-elegir" class="enviar">Guardar mi elección</button></div>'
+      : '<p>No hay opciones disponibles por ahora. Contáctanos.</p>';
     cont.innerHTML = '<div class="res-ok"><div class="ico">✅</div>' +
       '<h2>¡Felicidades' + nombre + '!</h2>' +
-      '<p>Ya estás <b>confirmado</b> para la prueba de jugadores.</p>' +
-      det + consejos +
-      '</div>';
+      '<p>Ya estás <b>confirmado</b>. Selecciona tu nueva fecha para la prueba:</p>' +
+      seleccion + '</div>';
+    var be = document.getElementById('btn-elegir');
+    if (be) be.addEventListener('click', enviarEleccion);
   } else {
     var link = res && res.link ? res.link : '';
     var boton = link
@@ -149,8 +178,37 @@ function mostrar(res){
   }
 }
 
+// Envía la opción elegida
+function enviarEleccion(){
+  var sel = document.querySelector('input[name="opcion"]:checked');
+  if (!sel){ alert('Selecciona una opción.'); return; }
+  var btn = document.getElementById('btn-elegir');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  llamar({
+    action: 'elegir', opcion: sel.value,
+    nombre: jugador.nombre, rut: jugador.rut, email: jugador.email, tel: jugador.tel
+  }, mostrarFinal);
+}
+
+// Muestra el detalle final tras elegir
+function mostrarFinal(res){
+  if (res && res.ok === false) { cont.innerHTML = bloqueError(); return; }
+  if (!(res && res.guardado)) { cont.innerHTML = bloqueError(); return; }
+  var lineas = '';
+  if (res.fecha)     lineas += '<p style="margin:0 0 6px">📅 <b>Fecha:</b> ' + esc(res.fecha) + '</p>';
+  if (res.horario)   lineas += '<p style="margin:0 0 6px">🕘 <b>Horario:</b> ' + esc(res.horario) + '</p>';
+  if (res.direccion) lineas += '<p style="margin:0 0 6px">📍 <b>Dirección:</b> ' + esc(res.direccion) + '</p>';
+  if (res.ubicacion) lineas += '<p style="margin:8px 0 0">🗺️ <a href="' + esc(res.ubicacion) + '" target="_blank" rel="noopener" style="color:#b30062;font-weight:700">Ver ubicación en el mapa</a></p>';
+  var det = '<div class="detalle"><p style="margin:0 0 10px"><b>¡Elección registrada! Debes asistir a:</b></p>' + lineas + '</div>';
+  cont.innerHTML = '<div class="res-ok"><div class="ico">✅</div>' +
+    '<h2>¡Listo!</h2>' +
+    '<p>' + esc(res.decision) + '</p>' +
+    det + consejosHTML + '</div>';
+}
+
 document.getElementById('form').addEventListener('submit', function(ev){
   ev.preventDefault();
+  cont = document.getElementById('resultado');
   var nombre = document.getElementById('nombre').value.trim();
   var rut = document.getElementById('rut').value.trim();
   var email = document.getElementById('email').value.trim();
@@ -162,31 +220,13 @@ document.getElementById('form').addEventListener('submit', function(ev){
   v = marcar('tel', tel.replace(/\D/g,'').length >= 8) && v;
   if(!v) return;
 
+  jugador = { nombre:nombre, rut:rut, email:email, tel:tel };
+
   document.getElementById('resultado').style.display = 'none';
   document.getElementById('btn').disabled = true;
   document.getElementById('cargando').style.display = 'block';
 
-  var cb = 'cbEstado' + Date.now();
-  var timeout = setTimeout(function(){
-    if (window[cb]) { mostrar({ ok:false }); limpiar(); }
-  }, 20000);
-
-  function limpiar(){
-    try { delete window[cb]; } catch(e){ window[cb] = undefined; }
-    if (s && s.parentNode) s.parentNode.removeChild(s);
-    clearTimeout(timeout);
-  }
-
-  window[cb] = function(res){ mostrar(res); limpiar(); };
-
-  var s = document.createElement('script');
-  s.src = ENDPOINT + '?action=estado&callback=' + cb +
-          '&nombre=' + encodeURIComponent(nombre) +
-          '&rut=' + encodeURIComponent(rut) +
-          '&email=' + encodeURIComponent(email) +
-          '&tel=' + encodeURIComponent(tel);
-  s.onerror = function(){ mostrar({ ok:false }); limpiar(); };
-  document.body.appendChild(s);
+  llamar({ action:'estado', nombre:nombre, rut:rut, email:email, tel:tel }, mostrarEstado);
 });
 </script>
 </body>
