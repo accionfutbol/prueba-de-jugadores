@@ -148,6 +148,13 @@ function mostrarEstado(res){
 
   if (res && res.ok === false) { cont.innerHTML = bloqueError(); return; }
 
+  if (res && res.confirmado && res.yaEligio) {
+    // Ya eligió antes: mostrar solo su información, sin opciones
+    mostrarFinal({ ok:true, guardado:true, decision:res.decision,
+      direccion:res.direccion, ubicacion:res.ubicacion, horario:res.horario, fecha:res.fecha });
+    return;
+  }
+
   if (res && res.confirmado) {
     var nombre = res.nombre ? (', ' + esc(res.nombre)) : '';
     var ops = res.opciones || [];
