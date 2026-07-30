@@ -150,8 +150,7 @@ function mostrarEstado(res){
 
   if (res && res.confirmado && res.yaEligio) {
     // Ya eligió antes: mostrar solo su información, sin opciones
-    mostrarFinal({ ok:true, guardado:true, decision:res.decision,
-      direccion:res.direccion, ubicacion:res.ubicacion, horario:res.horario, fecha:res.fecha });
+    mostrarFinal(res);
     return;
   }
 
@@ -197,19 +196,24 @@ function enviarEleccion(){
   }, mostrarFinal);
 }
 
-// Muestra el detalle final tras elegir
+// Muestra el detalle final (mismo diseño para "recién eligió" y "ya había elegido")
 function mostrarFinal(res){
+  if (!cont) cont = document.getElementById('resultado');
+  document.getElementById('cargando').style.display = 'none';
+  document.getElementById('btn').disabled = false;
+  cont.style.display = 'block';
   if (res && res.ok === false) { cont.innerHTML = bloqueError(); return; }
-  if (!(res && res.guardado)) { cont.innerHTML = bloqueError(); return; }
+
+  var nombre = res.nombre ? (', ' + esc(res.nombre)) : '';
   var lineas = '';
   if (res.fecha)     lineas += '<p style="margin:0 0 6px">📅 <b>Fecha:</b> ' + esc(res.fecha) + '</p>';
   if (res.horario)   lineas += '<p style="margin:0 0 6px">🕘 <b>Horario:</b> ' + esc(res.horario) + '</p>';
   if (res.direccion) lineas += '<p style="margin:0 0 6px">📍 <b>Dirección:</b> ' + esc(res.direccion) + '</p>';
   if (res.ubicacion) lineas += '<p style="margin:8px 0 0">🗺️ <a href="' + esc(res.ubicacion) + '" target="_blank" rel="noopener" style="color:#b30062;font-weight:700">Ver ubicación en el mapa</a></p>';
-  var det = '<div class="detalle"><p style="margin:0 0 10px"><b>¡Elección registrada! Debes asistir a:</b></p>' + lineas + '</div>';
+  var det = '<div class="detalle"><p style="margin:0 0 10px"><b>Recuerda dónde debes asistir a tu prueba:</b></p>' + lineas + '</div>';
   cont.innerHTML = '<div class="res-ok"><div class="ico">✅</div>' +
-    '<h2>¡Listo!</h2>' +
-    '<p>' + esc(res.decision) + '</p>' +
+    '<h2>¡Felicidades' + nombre + '!</h2>' +
+    '<p>Ya estás <b>confirmado</b> para la prueba de jugadores.</p>' +
     det + consejosHTML + '</div>';
 }
 
