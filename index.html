@@ -211,10 +211,30 @@ function mostrarFinal(res){
   if (res.direccion) lineas += '<p style="margin:0 0 6px">📍 <b>Dirección:</b> ' + esc(res.direccion) + '</p>';
   if (res.ubicacion) lineas += '<p style="margin:8px 0 0">🗺️ <a href="' + esc(res.ubicacion) + '" target="_blank" rel="noopener" style="color:#b30062;font-weight:700">Ver ubicación en el mapa</a></p>';
   var det = '<div class="detalle"><p style="margin:0 0 10px"><b>Recuerda dónde debes asistir a tu prueba:</b></p>' + lineas + '</div>';
+  var btnConfirmar = '<button type="button" id="btn-confirmar" class="enviar" style="margin-top:16px">INFORMACIÓN CONFIRMADA</button>' +
+                     '<div id="msg-confirmar" style="margin-top:10px;color:#1c7a3f;font-weight:700;display:none">✅ ¡Gracias! Tu información quedó confirmada.</div>';
   cont.innerHTML = '<div class="res-ok"><div class="ico">✅</div>' +
     '<h2>¡Felicidades' + nombre + '!</h2>' +
     '<p>Ya estás <b>confirmado</b> para la prueba de jugadores.</p>' +
-    det + consejosHTML + '</div>';
+    det + btnConfirmar + consejosHTML + '</div>';
+  var bc = document.getElementById('btn-confirmar');
+  if (bc) bc.addEventListener('click', confirmarInformacion);
+}
+
+// Guarda que el jugador confirmó su información (columnas BH..BL)
+function confirmarInformacion(){
+  var bc = document.getElementById('btn-confirmar');
+  bc.disabled = true; bc.textContent = 'Guardando…';
+  llamar({ action:'confirmar', nombre:jugador.nombre, rut:jugador.rut, email:jugador.email, tel:jugador.tel },
+    function(res){
+      if (res && res.ok !== false && res.guardadoOk){
+        bc.style.display = 'none';
+        document.getElementById('msg-confirmar').style.display = 'block';
+      } else {
+        bc.disabled = false; bc.textContent = 'INFORMACIÓN CONFIRMADA';
+        alert('No pudimos guardar. Intenta nuevamente.');
+      }
+    });
 }
 
 document.getElementById('form').addEventListener('submit', function(ev){
