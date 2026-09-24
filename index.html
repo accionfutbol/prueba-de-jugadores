@@ -48,6 +48,7 @@
   .opcion input{margin-top:2px;width:auto}
   .res-ok .enviar{background:var(--rosa)}
   .res-ok .enviar:hover{background:var(--rosa-osc)}
+  .participacion-ok{margin-top:16px;background:#1c7a3f;color:#fff;border-radius:12px;padding:14px;font-weight:800}
   .foot{text-align:center;font-size:.75rem;color:#8a8188;margin-top:22px}
   .cargando{text-align:center;color:var(--suave);padding:10px 0}
 </style>
@@ -211,10 +212,33 @@ function mostrarFinal(res){
   if (res.direccion) lineas += '<p style="margin:0 0 6px">📍 <b>Dirección:</b> ' + esc(res.direccion) + '</p>';
   if (res.ubicacion) lineas += '<p style="margin:8px 0 0">🗺️ <a href="' + esc(res.ubicacion) + '" target="_blank" rel="noopener" style="color:#b30062;font-weight:700">Ver ubicación en el mapa</a></p>';
   var det = '<div class="detalle"><p style="margin:0 0 10px"><b>Recuerda dónde debes asistir a tu prueba:</b></p>' + lineas + '</div>';
+  var participacion = res.participacionConfirmada
+    ? '<div class="participacion-ok">✅ PARTICIPACIÓN CONFIRMADA</div>'
+    : '<div id="zona-participacion"><button type="button" id="btn-participacion" class="enviar">CONFIRMA TU PARTICIPACIÓN A LA PRUEBA</button></div>';
   cont.innerHTML = '<div class="res-ok"><div class="ico">✅</div>' +
     '<h2>¡Felicidades' + nombre + '!</h2>' +
     '<p>Ya estás <b>confirmado</b> para la prueba de jugadores.</p>' +
-    det + consejosHTML + '</div>';
+    det + participacion + consejosHTML + '</div>';
+  var bp = document.getElementById('btn-participacion');
+  if (bp) bp.addEventListener('click', confirmarParticipacion);
+}
+
+// Confirma la participación del jugador (marca "CONFIRMADO" en la columna BF)
+function confirmarParticipacion(){
+  var btn = document.getElementById('btn-participacion');
+  btn.disabled = true; btn.textContent = 'Confirmando…';
+  llamar({
+    action: 'confirmar',
+    nombre: jugador.nombre, rut: jugador.rut, email: jugador.email, tel: jugador.tel
+  }, function(res){
+    var zona = document.getElementById('zona-participacion');
+    if (res && res.ok && res.guardadoOk) {
+      zona.innerHTML = '<div class="participacion-ok">✅ PARTICIPACIÓN CONFIRMADA</div>';
+    } else {
+      btn.disabled = false; btn.textContent = 'CONFIRMA TU PARTICIPACIÓN A LA PRUEBA';
+      alert('No pudimos confirmar tu participación. Intenta nuevamente.');
+    }
+  });
 }
 
 document.getElementById('form').addEventListener('submit', function(ev){
